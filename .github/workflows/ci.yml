@@ -89,8 +89,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: SonarCloud analysis
-        run: mvn sonar:sonar
+      - name: Build and analyse with SonarCloud
+        run: mvn verify sonar:sonar
           -Dsonar.projectKey=StefanL02_spring-petclinic
           -Dsonar.organization=stefanl02
           -Dsonar.host.url=https://sonarcloud.io
