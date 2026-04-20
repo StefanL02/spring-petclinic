@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-west-1"
+  region = "eu-north-1"
 }
 
 resource "aws_security_group" "petclinic_sg" {
@@ -44,7 +44,7 @@ resource "aws_security_group" "petclinic_sg" {
 }
 
 resource "aws_instance" "petclinic" {
-  ami                    = "ami-0905a3c97561e0b69"
+  ami                    = "ami-09a9858973b288bdd"
   instance_type          = "t2.micro"
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
