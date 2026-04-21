@@ -64,6 +64,10 @@
         path: /etc/prometheus
         state: directory
 
+    - name: Get server IP
+      shell: curl -s http://169.254.169.254/latest/meta-data/local-ipv4
+      register: server_ip
+
     - name: Create Prometheus config file
       copy:
         dest: /etc/prometheus/prometheus.yml
@@ -74,7 +78,7 @@
             - job_name: 'petclinic'
               metrics_path: '/actuator/prometheus'
               static_configs:
-                - targets: ['localhost:8080']
+                - targets: ['{{ server_ip.stdout }}:8080']
             - job_name: 'prometheus'
               static_configs:
                 - targets: ['localhost:9090']
