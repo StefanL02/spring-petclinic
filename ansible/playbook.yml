@@ -65,7 +65,7 @@
         state: directory
 
     - name: Get server IP
-      shell: curl -s http://169.254.169.254/latest/meta-data/local-ipv4
+      shell: hostname -I | awk '{print $1}'
       register: server_ip
 
     - name: Create Prometheus config file
