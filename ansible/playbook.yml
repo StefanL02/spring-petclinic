@@ -1,0 +1,62 @@
+---
+- name: Configure EC2 and deploy PetClinic
+  hosts: petclinic
+  become: yes
+  vars:
+    docker_image: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}/spring-petclinic:latest"
+
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull Docker image
+      docker_image:
+        name: "stefanl02/spring-petclinic:latest"
+        source: pull
+
+    - name: Stop existing container
+      docker_container:
+        name: petclinic
+        state: absent
+      ignore_errors: yes
+
+    - name: Run PetClinic container
+      docker_container:
+        name: petclinic
+        image: "stefanl02/spring-petclinic:latest"
+        state: started
+        ports:
+          - "8080:8080"
+        restart_policy: always
