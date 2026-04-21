@@ -2,8 +2,6 @@
 - name: Configure EC2 and deploy PetClinic
   hosts: petclinic
   become: yes
-  vars:
-    docker_image: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}/spring-petclinic:latest"
 
   tasks:
     - name: Update apt packages
@@ -41,12 +39,12 @@
         state: started
         enabled: yes
 
-    - name: Pull Docker image
+    - name: Pull PetClinic Docker image
       docker_image:
         name: "stefanl02/spring-petclinic:latest"
         source: pull
 
-    - name: Stop existing container
+    - name: Stop existing PetClinic container
       docker_container:
         name: petclinic
         state: absent
@@ -59,4 +57,56 @@
         state: started
         ports:
           - "8080:8080"
+        restart_policy: always
+
+    - name: Create Prometheus config directory
+      file:
+        path: /etc/prometheus
+        state: directory
+
+    - name: Create Prometheus config file
+      copy:
+        dest: /etc/prometheus/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+          scrape_configs:
+            - job_name: 'petclinic'
+              metrics_path: '/actuator/prometheus'
+              static_configs:
+                - targets: ['localhost:8080']
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+
+    - name: Stop existing Prometheus container
+      docker_container:
+        name: prometheus
+        state: absent
+      ignore_errors: yes
+
+    - name: Run Prometheus container
+      docker_container:
+        name: prometheus
+        image: "prom/prometheus:latest"
+        state: started
+        ports:
+          - "9090:9090"
+        volumes:
+          - "/etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+        restart_policy: always
+
+    - name: Stop existing Grafana container
+      docker_container:
+        name: grafana
+        state: absent
+      ignore_errors: yes
+
+    - name: Run Grafana container
+      docker_container:
+        name: grafana
+        image: "grafana/grafana:latest"
+        state: started
+        ports:
+          - "3000:3000"
         restart_policy: always
