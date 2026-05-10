@@ -248,7 +248,7 @@ jobs:
           EC2_IP="${{ needs.terraform.outputs.ec2_ip }}"
           echo "Waiting for app to start..."
           sleep 30
-          curl --fail http://$EC2_IP:8080 && echo "✅ App is running!" || echo "❌ Health check failed"
+          curl --fail http://$EC2_IP:8080 && echo " App is running!" || echo " Health check failed"
 
   notify:
     name: Notify
